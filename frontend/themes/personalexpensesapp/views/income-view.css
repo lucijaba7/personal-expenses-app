@@ -55,10 +55,10 @@
 }
 
 .income-view .icon {
-  color: var(--lumo-tertiary-text-color);
-  height: calc(var(--lumo-icon-size-s) * 0.8);
+  height: calc(var(--lumo-icon-size-m) * 0.8);
   margin-right: var(--lumo-space-s);
-  width: calc(var(--lumo-icon-size-s) * 0.8);
+  margin-top: var(--lumo-space-l);
+  width: calc(var(--lumo-icon-size-m) * 0.8);
 }
 
 .income-view .likes,

@@ -37,3 +37,6 @@ public class ExpensesViewCard extends LitTemplate {
         this.badge.setText("Label");
     }
 }
+
+
+

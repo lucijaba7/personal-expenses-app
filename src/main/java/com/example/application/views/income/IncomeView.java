@@ -1,15 +1,24 @@
 package com.example.application.views.income;
 
 import com.example.application.views.MainLayout;
+import com.example.application.views.expenses.ExpenseItem;
+import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.button.ButtonVariant;
+import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.GridVariant;
 import com.vaadin.flow.component.html.Div;
+import com.vaadin.flow.component.html.H2;
 import com.vaadin.flow.component.html.Image;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
+import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import com.vaadin.flow.component.select.Select;
+import com.vaadin.flow.component.textfield.NumberField;
+import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.router.AfterNavigationEvent;
 import com.vaadin.flow.router.AfterNavigationObserver;
 import com.vaadin.flow.router.PageTitle;
@@ -21,137 +30,147 @@ import java.util.List;
 @Route(value = "", layout = MainLayout.class)
 public class IncomeView extends Div implements AfterNavigationObserver {
 
-    Grid<Person> grid = new Grid<>();
+    Grid<Income> grid = new Grid<>();
 
     public IncomeView() {
         addClassName("income-view");
         setSizeFull();
-        grid.setHeight("100%");
+
+        grid.setHeight("70%");
         grid.addThemeVariants(GridVariant.LUMO_NO_BORDER, GridVariant.LUMO_NO_ROW_BORDERS);
-        grid.addComponentColumn(person -> createCard(person));
-        add(grid);
+        grid.addComponentColumn(income -> createCard(income));;
+
+        Dialog addDialog = new Dialog();
+        addDialog.getElement().setAttribute("aria-label", "Edit income");
+
+        VerticalLayout dialogLayout_2 = createDialogLayout_2(addDialog);
+        addDialog.add(dialogLayout_2);
+
+        Button addButton = new Button("Add", e -> addDialog.open());
+        addButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
+
+        add(grid, addDialog, addButton);
     }
 
-    private HorizontalLayout createCard(Person person) {
+    private HorizontalLayout createCard(Income income) {
         HorizontalLayout card = new HorizontalLayout();
         card.addClassName("card");
         card.setSpacing(false);
+        card.setHeight("30%");
+        card.setWidth("70%");
         card.getThemeList().add("spacing-s");
+        card.getElement().getStyle().set("padding", "0 0 10 0").set("margin", "0 0 0 0");
+        card.setAlignItems(FlexComponent.Alignment.CENTER);
 
-        Image image = new Image();
-        image.setSrc(person.getImage());
-        VerticalLayout description = new VerticalLayout();
-        description.addClassName("description");
-        description.setSpacing(false);
-        description.setPadding(false);
+        // negdje je otiso haha ja bi da se vrati
+        Span badge = new Span("");
+        badge.addClassName("badge");
+        badge.getElement().getStyle().set("background-color", "red");
+        badge.getElement().getStyle().set("margin", "0 0 0 8");
+        badge.setWidth("5px");
+        badge.setHeight("100%");
 
-        HorizontalLayout header = new HorizontalLayout();
-        header.addClassName("header");
-        header.setSpacing(false);
-        header.getThemeList().add("spacing-s");
+        VerticalLayout incomeDetails = new VerticalLayout();
+        Span incomeName = new Span(income.getIncomeName());
+        incomeName.getStyle().set("font-weight", "bold");
 
-        Span name = new Span(person.getName());
-        name.addClassName("name");
-        Span date = new Span(person.getDate());
-        date.addClassName("date");
-        header.add(name, date);
+        Span amount = new Span(String.valueOf(income.getAmount()));
+        incomeDetails.add(incomeName, amount);
 
-        Span post = new Span(person.getPost());
-        post.addClassName("post");
+        incomeDetails.setSpacing(false);
+        incomeDetails.setPadding(false);
+        incomeDetails.setMargin(false);
 
-        HorizontalLayout actions = new HorizontalLayout();
-        actions.addClassName("actions");
-        actions.setSpacing(false);
-        actions.getThemeList().add("spacing-s");
+        Dialog dialog = new Dialog();
+        dialog.getElement().setAttribute("aria-label", "Edit income");
 
-        Icon likeIcon = VaadinIcon.HEART.create();
-        likeIcon.addClassName("icon");
-        Span likes = new Span(person.getLikes());
-        likes.addClassName("likes");
-        Icon commentIcon = VaadinIcon.COMMENT.create();
-        commentIcon.addClassName("icon");
-        Span comments = new Span(person.getComments());
-        comments.addClassName("comments");
-        Icon shareIcon = VaadinIcon.CONNECT.create();
-        shareIcon.addClassName("icon");
-        Span shares = new Span(person.getShares());
-        shares.addClassName("shares");
+        VerticalLayout dialogLayout = createDialogLayout(dialog, income.getAmount());
+        dialog.add(dialogLayout);
 
-        actions.add(likeIcon, likes, commentIcon, comments, shareIcon, shares);
+        Button editButton = new Button(new Icon(VaadinIcon.EDIT), e -> dialog.open());
+        Button trashButton = new Button(new Icon(VaadinIcon.TRASH));
 
-        description.add(header, post, actions);
-        card.add(image, description);
+        card.add(badge, incomeDetails, editButton, trashButton);
         return card;
     }
+
 
     @Override
     public void afterNavigation(AfterNavigationEvent event) {
 
         // Set some data when this view is displayed.
-        List<Person> persons = Arrays.asList( //
-                createPerson("https://randomuser.me/api/portraits/men/42.jpg", "John Smith", "May 8",
-                        "In publishing and graphic design, Lorem ipsum is a placeholder text commonly used to demonstrate the visual form of a document without relying on meaningful content (also called greeking).",
-                        "1K", "500", "20"),
-                createPerson("https://randomuser.me/api/portraits/women/42.jpg", "Abagail Libbie", "May 3",
-                        "In publishing and graphic design, Lorem ipsum is a placeholder text commonly used to demonstrate the visual form of a document without relying on meaningful content (also called greeking).",
-                        "1K", "500", "20"),
-                createPerson("https://randomuser.me/api/portraits/men/24.jpg", "Alberto Raya", "May 3",
-
-                        "In publishing and graphic design, Lorem ipsum is a placeholder text commonly used to demonstrate the visual form of a document without relying on meaningful content (also called greeking).",
-                        "1K", "500", "20"),
-                createPerson("https://randomuser.me/api/portraits/women/24.jpg", "Emmy Elsner", "Apr 22",
-
-                        "In publishing and graphic design, Lorem ipsum is a placeholder text commonly used to demonstrate the visual form of a document without relying on meaningful content (also called greeking).",
-                        "1K", "500", "20"),
-                createPerson("https://randomuser.me/api/portraits/men/76.jpg", "Alf Huncoot", "Apr 21",
-
-                        "In publishing and graphic design, Lorem ipsum is a placeholder text commonly used to demonstrate the visual form of a document without relying on meaningful content (also called greeking).",
-                        "1K", "500", "20"),
-                createPerson("https://randomuser.me/api/portraits/women/76.jpg", "Lidmila Vilensky", "Apr 17",
-
-                        "In publishing and graphic design, Lorem ipsum is a placeholder text commonly used to demonstrate the visual form of a document without relying on meaningful content (also called greeking).",
-                        "1K", "500", "20"),
-                createPerson("https://randomuser.me/api/portraits/men/94.jpg", "Jarrett Cawsey", "Apr 17",
-                        "In publishing and graphic design, Lorem ipsum is a placeholder text commonly used to demonstrate the visual form of a document without relying on meaningful content (also called greeking).",
-                        "1K", "500", "20"),
-                createPerson("https://randomuser.me/api/portraits/women/94.jpg", "Tania Perfilyeva", "Mar 8",
-
-                        "In publishing and graphic design, Lorem ipsum is a placeholder text commonly used to demonstrate the visual form of a document without relying on meaningful content (also called greeking).",
-                        "1K", "500", "20"),
-                createPerson("https://randomuser.me/api/portraits/men/16.jpg", "Ivan Polo", "Mar 5",
-
-                        "In publishing and graphic design, Lorem ipsum is a placeholder text commonly used to demonstrate the visual form of a document without relying on meaningful content (also called greeking).",
-                        "1K", "500", "20"),
-                createPerson("https://randomuser.me/api/portraits/women/16.jpg", "Emelda Scandroot", "Mar 5",
-
-                        "In publishing and graphic design, Lorem ipsum is a placeholder text commonly used to demonstrate the visual form of a document without relying on meaningful content (also called greeking).",
-                        "1K", "500", "20"),
-                createPerson("https://randomuser.me/api/portraits/men/67.jpg", "Marcos Sá", "Mar 4",
-
-                        "In publishing and graphic design, Lorem ipsum is a placeholder text commonly used to demonstrate the visual form of a document without relying on meaningful content (also called greeking).",
-                        "1K", "500", "20"),
-                createPerson("https://randomuser.me/api/portraits/women/67.jpg", "Jacqueline Asong", "Mar 2",
-
-                        "In publishing and graphic design, Lorem ipsum is a placeholder text commonly used to demonstrate the visual form of a document without relying on meaningful content (also called greeking).",
-                        "1K", "500", "20")
-
+        List<Income> incomes = Arrays.asList( //
+                createIncome("Cash", 500.0),
+                createIncome("Mastercard credit card",  7000.0),
+                createIncome("Dainers credit card", 400.50)
         );
 
-        grid.setItems(persons);
+        grid.setItems(incomes);
     }
 
-    private static Person createPerson(String image, String name, String date, String post, String likes,
-            String comments, String shares) {
-        Person p = new Person();
-        p.setImage(image);
-        p.setName(name);
-        p.setDate(date);
-        p.setPost(post);
-        p.setLikes(likes);
-        p.setComments(comments);
-        p.setShares(shares);
+    private static Income createIncome(String incomeName, Double amount) {
+        Income i = new Income();
+        i.setIncomeName(incomeName);
+        i.setAmount(amount);
 
-        return p;
+        return i;
     }
+
+    private static VerticalLayout createDialogLayout(Dialog dialog, Double amount) {
+
+        H2 headline = new H2("Edit income");
+        headline.getStyle().set("margin", "var(--lumo-space-m) 0 0 0")
+                .set("font-size", "1.5em").set("font-weight", "bold");
+
+        NumberField incomeAmount = new NumberField("Current income");
+        incomeAmount.setValue(amount);
+        Div dollarPrefix = new Div();
+        dollarPrefix.setText("$");
+        incomeAmount.setPrefixComponent(dollarPrefix);
+        incomeAmount.getStyle().set("margin", "0 0 0 0");
+
+        Button cancelButton = new Button("Cancel", e -> dialog.close());
+        Button saveButton = new Button("Save", e -> dialog.close());
+        saveButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
+        HorizontalLayout buttonLayout = new HorizontalLayout(saveButton, cancelButton);
+        buttonLayout.setJustifyContentMode(FlexComponent.JustifyContentMode.CENTER);
+
+        VerticalLayout dialogLayout = new VerticalLayout(headline, incomeAmount, buttonLayout);
+        dialogLayout.setPadding(false);
+        dialogLayout.setAlignItems(FlexComponent.Alignment.STRETCH);
+        dialogLayout.getStyle().set("width", "300px").set("max-width", "100%");
+
+        return dialogLayout;
+    }
+
+    private static VerticalLayout createDialogLayout_2(Dialog dialog) {
+
+        H2 headline = new H2("Add a new income");
+        headline.getStyle().set("margin", "var(--lumo-space-m) 0 0 0")
+                .set("font-size", "1.5em").set("font-weight", "bold");
+
+        TextField incomeName = new TextField("Income");
+
+        NumberField amount = new NumberField("Amount");
+        amount.setPrefixComponent(VaadinIcon.DOLLAR.create());
+
+        VerticalLayout fieldLayout = new VerticalLayout(incomeName,amount);
+        fieldLayout.setPadding(false);
+        fieldLayout.setAlignItems(FlexComponent.Alignment.STRETCH);
+
+        Button cancelButton = new Button("Cancel", e -> dialog.close());
+        Button saveButton = new Button("Add", e -> dialog.close());
+        saveButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
+        HorizontalLayout buttonLayout = new HorizontalLayout(saveButton, cancelButton);
+        buttonLayout.setJustifyContentMode(FlexComponent.JustifyContentMode.CENTER);
+
+        VerticalLayout dialogLayout = new VerticalLayout(headline, fieldLayout, buttonLayout);
+        dialogLayout.setPadding(false);
+        dialogLayout.setAlignItems(FlexComponent.Alignment.STRETCH);
+        dialogLayout.getStyle().set("width", "300px").set("max-width", "100%");
+
+        return dialogLayout;
+    }
+
 
 }
